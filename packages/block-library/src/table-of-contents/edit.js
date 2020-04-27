@@ -15,8 +15,11 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import List from './list';
-import { convertBlocksToHeadingList, linearToNestedHeadingList } from './utils';
+import TableOfContentsList from './list';
+import {
+	getHeadingsFromHeadingElements,
+	linearToNestedHeadingList,
+} from './utils';
 
 export default function TableOfContentsEdit() {
 	const blockProps = useBlockProps();
@@ -24,19 +27,37 @@ export default function TableOfContentsEdit() {
 	// Local state; not saved to block attributes. The saved block is dynamic and uses PHP to generate its content.
 	const [ headings, setHeadings ] = useState( [] );
 
-	const headingBlocks = useSelect( ( select ) => {
-		return select( 'core/block-editor' )
-			.getBlocks()
-			.filter( ( block ) => block.name === 'core/heading' );
+	const postContent = useSelect( ( select ) => {
+		return select( 'core/editor' ).getEditedPostContent();
 	}, [] );
 
 	useEffect( () => {
-		const latestHeadings = convertBlocksToHeadingList( headingBlocks );
+		// Create a temporary container to put the post content into, so we can
+		// use the DOM to find all the headings.
+		const tempPostContentDOM = document.createElement( 'div' );
+		tempPostContentDOM.innerHTML = postContent;
+
+		// Remove template elements so that headings inside them aren't counted.
+		// This is only needed for IE11, which doesn't recognize the element and
+		// treats it like a div.
+		for ( const template of tempPostContentDOM.querySelectorAll(
+			'template'
+		) ) {
+			tempPostContentDOM.removeChild( template );
+		}
+
+		const headingElements = tempPostContentDOM.querySelectorAll(
+			'h1, h2, h3, h4, h5, h6'
+		);
+
+		const latestHeadings = getHeadingsFromHeadingElements(
+			headingElements
+		);
 
 		if ( ! isEqual( headings, latestHeadings ) ) {
 			setHeadings( latestHeadings );
 		}
-	}, [ headingBlocks ] );
+	}, [ postContent ] );
 
 	// If there are no headings or the only heading is empty.
 	if ( headings.length === 0 || headings[ 0 ].content === '' ) {
@@ -56,7 +77,9 @@ export default function TableOfContentsEdit() {
 
 	return (
 		<nav { ...blockProps }>
-			<List>{ linearToNestedHeadingList( headings ) }</List>
+			<TableOfContentsList
+				nestedHeadingList={ linearToNestedHeadingList( headings ) }
+			/>
 		</nav>
 	);
 }
