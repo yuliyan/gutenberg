@@ -382,6 +382,8 @@ function gutenberg_experimental_global_styles_get_css_property( $style_property 
 			return 'font-size';
 		case 'lineHeight':
 			return 'line-height';
+		case 'fontFamily':
+			return 'font-family';
 		default:
 			return $style_property;
 	}
@@ -399,6 +401,7 @@ function gutenberg_experimental_global_styles_get_style_property() {
 		'backgroundColor'          => array( 'color', 'background' ),
 		'color'                    => array( 'color', 'text' ),
 		'fontSize'                 => array( 'typography', 'fontSize' ),
+		'fontFamily'               => array( 'typography', 'fontFamily' ),
 		'lineHeight'               => array( 'typography', 'lineHeight' ),
 	);
 }
@@ -415,6 +418,7 @@ function gutenberg_experimental_global_styles_get_support_keys() {
 		'backgroundColor'          => array( '__experimentalColor' ),
 		'color'                    => array( '__experimentalColor' ),
 		'fontSize'                 => array( '__experimentalFontSize' ),
+		'fontFamily'               => array( '__experimentalFontFamily' ),
 		'lineHeight'               => array( '__experimentalLineHeight' ),
 	);
 }
@@ -426,17 +430,21 @@ function gutenberg_experimental_global_styles_get_support_keys() {
  */
 function gutenberg_experimental_global_styles_get_presets_structure() {
 	return array(
-		'color'    => array(
+		'color'      => array(
 			'path' => array( 'color', 'palette' ),
 			'key'  => 'color',
 		),
-		'gradient' => array(
+		'gradient'   => array(
 			'path' => array( 'color', 'gradients' ),
 			'key'  => 'gradient',
 		),
-		'fontSize' => array(
+		'fontSize'   => array(
 			'path' => array( 'typography', 'fontSizes' ),
 			'key'  => 'size',
+		),
+		'fontFamily' => array(
+			'path' => array( 'typography', 'fontFamilies' ),
+			'key'  => 'fontFamily',
 		),
 	);
 }
@@ -476,9 +484,10 @@ function gutenberg_experimental_global_styles_get_block_data() {
 				'global',
 				array(
 					'supports' => array(
-						'__experimentalSelector' => ':root',
-						'__experimentalFontSize' => true,
-						'__experimentalColor'    => array(
+						'__experimentalSelector'   => ':root',
+						'__experimentalFontSize'   => true,
+						'__experimentalFontFamily' => true,
+						'__experimentalColor'      => array(
 							'linkColor' => true,
 							'gradients' => true,
 						),

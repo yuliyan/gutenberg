@@ -12,6 +12,7 @@
 		"__experimentalColor": {
 			"gradients": true
 		},
+		"__experimentalFontFamily": true,
 		"__experimentalFontSize": true,
 		"__experimentalLineHeight": true
 	}
