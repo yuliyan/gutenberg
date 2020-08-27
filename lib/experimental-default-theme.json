@@ -73,6 +73,61 @@
 					"value": 48
 				}
 			],
+			"font-family": [
+				{
+					"value": "Georgia, serif",
+					"slug": "georgia",
+					"name": "Georgia, serif"
+				},
+				{
+					"value": "\"Palatino Linotype\", \"Book Antiqua\", Palatino, serif",
+					"slug": "palatino-linotype"
+				},
+				{
+					"value": "\"Times New Roman\", Times, serif",
+					"slug": "times-new-roman"
+				},
+				{
+					"value": "Arial, Helvetica, sans-serif",
+					"slug": "arial"
+				},
+				{
+					"value": "\"Arial Black\", Gadget, sans-serif",
+					"slug": "arial-block"
+				},
+				{
+					"value": "\"Comic Sans MS\", cursive, sans-serif",
+					"slug": "comic-sans-ms"
+				},
+				{
+					"value": "Impact, Charcoal, sans-serif",
+					"slug": "impact"
+				},
+				{
+					"value": "\"Lucida Sans Unicode\", \"Lucida Grande\", sans-serif",
+					"slug": "lucida-sans-unicode"
+				},
+				{
+					"value": "Tahoma, Geneva, sans-serif",
+					"slug": "tahoma"
+				},
+				{
+					"value": "\"Trebuchet MS\", Helvetica, sans-serif",
+					"slug": "trebuchet-ms"
+				},
+				{
+					"value": "Verdana, Geneva, sans-serif",
+					"slug": "verdana"
+				},
+				{
+					"value": "\"Courier New\", Courier, monospace",
+					"slug": "courier-new"
+				},
+				{
+					"value": "\"Lucida Console\", Monaco, monospace",
+					"slug": "lucida-console"
+				}
+			],
 			"gradient": [
 				{
 					"slug": "blush-bordeaux",
