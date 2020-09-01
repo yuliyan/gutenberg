@@ -181,7 +181,8 @@
 		},
 		"features": {
 			"typography": {
-				"dropCap": true
+				"dropCap": true,
+				"fontWeight": true
 			},
 			"color": {
 				"custom": true

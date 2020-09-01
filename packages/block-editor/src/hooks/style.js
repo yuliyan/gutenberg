@@ -57,6 +57,7 @@ export function getInlineStyles( styles = {} ) {
 		lineHeight: [ 'typography', 'lineHeight' ],
 		fontSize: [ 'typography', 'fontSize' ],
 		fontFamily: [ 'typography', 'fontFamily' ],
+		fontWeight: [ 'typography', 'fontWeight' ],
 		background: [ 'color', 'gradient' ],
 		backgroundColor: [ 'color', 'background' ],
 		color: [ 'color', 'text' ],

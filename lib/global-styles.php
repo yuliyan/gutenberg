@@ -277,6 +277,7 @@ function gutenberg_experimental_global_styles_get_supported_styles( $supports ) 
 		'font-size'                => array( '__experimentalFontSize' ),
 		'line-height'              => array( '__experimentalLineHeight' ),
 		'font-family'              => array( '__experimentalFontFamily' ),
+		'font-weight'              => array( '__experimentalFontWeight' ),
 	);
 
 	$supported_features = array();
@@ -387,6 +388,7 @@ function gutenberg_experimental_global_styles_flatten_styles_tree( $styles ) {
 		'line-height'              => array( 'typography', 'lineHeight' ),
 		'font-size'                => array( 'typography', 'fontSize' ),
 		'font-family'              => array( 'typography', 'fontFamily' ),
+		'font-weight'              => array( 'typography', 'fontWeight' ),
 		'background'               => array( 'color', 'gradient' ),
 		'background-color'         => array( 'color', 'background' ),
 		'color'                    => array( 'color', 'text' ),

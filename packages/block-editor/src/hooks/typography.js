@@ -26,11 +26,17 @@ import {
 	FontSizeEdit,
 	useIsFontSizeDisabled,
 } from './font-size';
+import {
+	FONT_WEIGHT_SUPPORT_KEY,
+	FontWeightEdit,
+	useIsFontWeightDisabled,
+} from './font-weight';
 
 export const TYPOGRAPHY_SUPPORT_KEYS = [
 	LINE_HEIGHT_SUPPORT_KEY,
 	FONT_SIZE_SUPPORT_KEY,
 	FONT_FAMILY_SUPPORT_KEY,
+	FONT_WEIGHT_SUPPORT_KEY,
 ];
 
 export function TypographyPanel( props ) {
@@ -43,6 +49,7 @@ export function TypographyPanel( props ) {
 		<InspectorControls>
 			<PanelBody title={ __( 'Typography' ) }>
 				<FontFamilyEdit { ...props } />
+				<FontWeightEdit { ...props } />
 				<FontSizeEdit { ...props } />
 				<LineHeightEdit { ...props } />
 			</PanelBody>
@@ -64,6 +71,7 @@ function useIsTypographyDisabled( props = {} ) {
 		useIsFontSizeDisabled( props ),
 		useIsLineHeightDisabled( props ),
 		useIsFontFamilyDisabled( props ),
+		useIsFontWeightDisabled( props ),
 	];
 
 	return configs.filter( Boolean ).length === configs.length;

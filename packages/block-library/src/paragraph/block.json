@@ -35,6 +35,7 @@
 		},
 		"__experimentalFontSize": true,
 		"__experimentalFontFamily": true,
+		"__experimentalFontWeight": true,
 		"__experimentalLineHeight": true,
 		"__experimentalSelector": "p",
 		"__unstablePasteTextInline": true
