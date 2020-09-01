@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### New Features
+
+-   Enable `react-hooks/exhaustive-deps` rules to react config.
+
 ## 7.2.1 (2020-09-17)
 
 ### Bug Fixes
