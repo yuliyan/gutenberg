@@ -236,7 +236,9 @@ function filter_rest_wp_template_part_query( $args, $request ) {
 			}
 			// Build and save each template part.
 			foreach ( $template_part_files as $template_part_file ) {
-				$content = file_get_contents( $template_part_file );
+				ob_start();
+				include $template_part_file;
+				$content = ob_get_clean();
 				// Infer slug from filepath.
 				$slug = substr(
 					$template_part_file,

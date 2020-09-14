@@ -176,7 +176,9 @@ function create_auto_draft_for_template_part_block( $block ) {
 				}
 
 				if ( $template_part_file_path ) {
-					$file_contents = file_get_contents( $template_part_file_path );
+					ob_start();
+					include $template_part_file_path;
+					$file_contents = ob_get_clean();
 					if ( $template_part_post && $template_part_post->post_content === $file_contents ) {
 						$template_part_id = $template_part_post->ID;
 					} else {
@@ -214,7 +216,7 @@ function create_auto_draft_for_template_part_block( $block ) {
  * @param string[] $template_hierarchy (optional) The current template hierarchy, ordered by priority.
  * @return null|array {
  *  @type WP_Post|null template_post A template post object, or null if none could be found.
- *  @type int[] A list of template parts IDs for the template.
+ *  @type int[] template_part_ids A list of template parts IDs for the template.
  * }
  */
 function gutenberg_find_template_post_and_parts( $template_type, $template_hierarchy = array() ) {
@@ -283,8 +285,10 @@ function gutenberg_find_template_post_and_parts( $template_type, $template_hiera
 
 	// If there is, use it instead.
 	if ( isset( $higher_priority_block_template_path ) ) {
-		$post_name             = basename( $higher_priority_block_template_path, '.html' );
-		$file_contents         = file_get_contents( $higher_priority_block_template_path );
+		$post_name = basename( $higher_priority_block_template_path, '.html' );
+		ob_start();
+		include $higher_priority_block_template_path;
+		$file_contents         = ob_get_clean();
 		$current_template_post = array(
 			'post_content' => $file_contents,
 			'post_title'   => $post_name,
