@@ -25,8 +25,12 @@ describe( 'invalid blocks', () => {
 		);
 		await changeModeButton.click();
 
+		const frame = await page
+			.frames()
+			.find( ( f ) => f.name() === 'editor-content' );
+
 		// Focus on the textarea and enter an invalid paragraph
-		await page.click(
+		await frame.click(
 			'.block-editor-block-list__layout .block-editor-block-list__block .block-editor-block-list__block-html-textarea'
 		);
 		await page.keyboard.type( '<p>invalid paragraph' );
@@ -37,12 +41,12 @@ describe( 'invalid blocks', () => {
 		expect( console ).toHaveWarned();
 
 		// Click on the 'three-dots' menu toggle
-		await page.click(
+		await frame.click(
 			'.block-editor-warning__actions button[aria-label="More options"]'
 		);
 
 		// Click on the 'Resolve' button
-		const [ resolveButton ] = await page.$x( '//button[text()="Resolve"]' );
+		const [ resolveButton ] = await frame.$x( '//button[text()="Resolve"]' );
 		await resolveButton.click();
 
 		// Check we get the resolve modal with the appropriate contents
