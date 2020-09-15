@@ -1,21 +1,16 @@
 /**
  * WordPress dependencies
  */
-import { addFilter } from '@wordpress/hooks';
 import {
 	DropZoneProvider,
-	__experimentalEditInPlaceControl as EditInPlaceControl,
 	FocusReturnProvider,
 	Popover,
 	SlotFillProvider,
-	ToolbarGroup,
 } from '@wordpress/components';
 import {
 	BlockEditorKeyboardShortcuts,
 	BlockEditorProvider,
-	BlockControls,
 } from '@wordpress/block-editor';
-import { createHigherOrderComponent } from '@wordpress/compose';
 
 /**
  * Internal dependencies
@@ -30,28 +25,7 @@ import Notices from '../notices';
 import Toolbar from '../toolbar';
 import Editor from '../editor';
 import InspectorAdditions from '../inspector-additions';
-
-const withMenuName = createHigherOrderComponent(
-	( BlockEdit ) => ( props ) => {
-		return (
-			<>
-				<BlockEdit { ...props } />
-				<BlockControls>
-					<ToolbarGroup>
-						<EditInPlaceControl label="Sample menu" />
-					</ToolbarGroup>
-				</BlockControls>
-			</>
-		);
-	},
-	'withMenuName'
-);
-
-addFilter(
-	'navigation.BlockEdit',
-	'core/edit-navigation/with-menu-name',
-	withMenuName
-);
+import useNavigationBlockWithName from './use-navigation-block-with-name';
 
 export default function Layout( { blockEditorSettings } ) {
 	const {
@@ -67,6 +41,10 @@ export default function Layout( { blockEditorSettings } ) {
 	);
 
 	useMenuNotifications( selectedMenuId );
+
+	useNavigationBlockWithName( {
+		menuId: selectedMenuId,
+	} );
 
 	return (
 		<ErrorBoundary>
