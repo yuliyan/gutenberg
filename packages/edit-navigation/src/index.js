@@ -17,7 +17,7 @@ import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
 import { decodeEntities } from '@wordpress/html-entities';
-import { addFilter, removeFilter } from '@wordpress/hooks';
+import { addFilter } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -143,26 +143,6 @@ const fetchLinkSuggestions = (
 		} ) );
 	} );
 };
-
-removeFilter(
-	'navigation.BlockEdit',
-	'core/block-library/navigation/with-inspector-controls'
-);
-
-removeFilter(
-	'navigation.BlockEdit',
-	'core/block-library/navigation/with-block-controls'
-);
-
-removeFilter(
-	'navigation.BlockEdit',
-	'core/block-library/navigation/with-list-view'
-);
-
-removeFilter(
-	'navigation.BlockEdit',
-	'core/block-library/navigation/with-formatting-controls'
-);
 
 export function initialize( id, settings ) {
 	if ( ! settings.blockNavMenus ) {
