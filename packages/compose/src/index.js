@@ -25,3 +25,6 @@ export { default as useResizeObserver } from './hooks/use-resize-observer';
 export { default as useAsyncList } from './hooks/use-async-list';
 export { default as useWarnOnChange } from './hooks/use-warn-on-change';
 export { default as useDebounce } from './hooks/use-debounce';
+export { default as useLazyRef } from './hooks/use-lazy-ref';
+export { default as useShallowCompareEffect } from './hooks/use-shallow-compare-effect';
+export { default as useDidMount } from './hooks/use-did-mount';

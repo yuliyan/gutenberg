@@ -157,6 +157,16 @@ _Parameters_
 
 -   _args_ `...any`: Arguments passed to Lodash's `debounce`.
 
+<a name="useDidMount" href="#useDidMount">#</a> **useDidMount**
+
+A drop-in replacement of the hook version of `componentDidMount`.
+Like `useEffect` but only called once when the component is mounted.
+This hook is only used for backward-compatibility reason. Consider using `useEffect` wherever possible.
+
+_Parameters_
+
+-   _effect_ `Function`: The effect callback passed to `useEffect`.
+
 <a name="useInstanceId" href="#useInstanceId">#</a> **useInstanceId**
 
 Provides a unique instance ID.
@@ -175,6 +185,22 @@ _Parameters_
 -   _shortcuts_ `(Array<string>|string)`: Keyboard Shortcuts.
 -   _callback_ `Function`: Shortcut callback.
 -   _options_ `WPKeyboardShortcutConfig`: Shortcut options.
+
+<a name="useLazyRef" href="#useLazyRef">#</a> **useLazyRef**
+
+Like `useRef` but only run the initializer once.
+
+_Parameters_
+
+-   _initializer_ `Function`: A function to return the ref object.
+
+_Returns_
+
+-   `MutableRefObject`: The returned ref object.
+
+_Type Definition_
+
+-   _MutableRefObject_ (unknown type)
 
 <a name="useMediaQuery" href="#useMediaQuery">#</a> **useMediaQuery**
 
@@ -232,6 +258,17 @@ const App = () => {
 _Returns_
 
 -   `Array`: An array of {Element} `resizeListener` and {?Object} `sizes` with properties `width` and `height`
+
+<a name="useShallowCompareEffect" href="#useShallowCompareEffect">#</a> **useShallowCompareEffect**
+
+Like `useEffect` but call the effect when the dependencies are not shallowly equal.
+Useful when the size of the dependency array might change during re-renders.
+This hook is only used for backward-compatibility reason. Consider using `useEffect` wherever possible.
+
+_Parameters_
+
+-   _effect_ `Function`: The effect callback passed to `useEffect`.
+-   _deps_ `Array`: The dependency array that is compared against shallowly.
 
 <a name="useViewportMatch" href="#useViewportMatch">#</a> **useViewportMatch**
 

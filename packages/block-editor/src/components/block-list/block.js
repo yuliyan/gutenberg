@@ -127,7 +127,10 @@ function BlockListBlock( {
 		[ clientId ]
 	);
 	const { removeBlock } = useDispatch( 'core/block-editor' );
-	const onRemove = useCallback( () => removeBlock( clientId ), [ clientId ] );
+	const onRemove = useCallback( () => removeBlock( clientId ), [
+		clientId,
+		removeBlock,
+	] );
 
 	// Handling the error state
 	const [ hasError, setErrorState ] = useState( false );
@@ -214,23 +217,41 @@ function BlockListBlock( {
 		);
 	}
 
-	const value = {
-		clientId,
-		rootClientId,
-		isSelected,
-		isFirstMultiSelected,
-		isLastMultiSelected,
-		isPartOfMultiSelection,
-		enableAnimation,
-		index,
-		className: wrapperClassName,
-		isLocked,
-		name,
-		mode,
-		blockTitle: blockType.title,
-		wrapperProps: omit( wrapperProps, [ 'data-align' ] ),
-	};
-	const memoizedValue = useMemo( () => value, Object.values( value ) );
+	const wrapperPropsOmitAlign = omit( wrapperProps, [ 'data-align' ] );
+	const memoizedValue = useMemo(
+		() => ( {
+			clientId,
+			rootClientId,
+			isSelected,
+			isFirstMultiSelected,
+			isLastMultiSelected,
+			isPartOfMultiSelection,
+			enableAnimation,
+			index,
+			className: wrapperClassName,
+			isLocked,
+			name,
+			mode,
+			blockTitle: blockType.title,
+			wrapperProps: wrapperPropsOmitAlign,
+		} ),
+		[
+			clientId,
+			rootClientId,
+			isSelected,
+			isFirstMultiSelected,
+			isLastMultiSelected,
+			isPartOfMultiSelection,
+			enableAnimation,
+			index,
+			wrapperClassName,
+			isLocked,
+			name,
+			mode,
+			blockType.title,
+			wrapperPropsOmitAlign,
+		]
+	);
 
 	let block;
 
