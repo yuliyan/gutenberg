@@ -42,9 +42,7 @@ export default function Layout( { blockEditorSettings } ) {
 
 	useMenuNotifications( selectedMenuId );
 
-	useNavigationBlockWithName( {
-		menuId: selectedMenuId,
-	} );
+	useNavigationBlockWithName( selectedMenuId );
 
 	return (
 		<ErrorBoundary>
