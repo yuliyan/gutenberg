@@ -23,8 +23,8 @@
 		"anchor": true,
 		"className": false,
 		"lightBlockWrapper": true,
-		"__experimentalColor": {
-			"linkColor": true
+		"color": {
+			"link": true
 		},
 		"__experimentalFontFamily": true,
 		"__experimentalFontSize": true,

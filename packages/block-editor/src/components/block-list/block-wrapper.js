@@ -18,6 +18,7 @@ import { focus, isTextField, placeCaretAtHorizontalEdge } from '@wordpress/dom';
 import { ENTER, BACKSPACE, DELETE } from '@wordpress/keycodes';
 import { __, sprintf } from '@wordpress/i18n';
 import { useSelect, useDispatch } from '@wordpress/data';
+import deprecated from '@wordpress/deprecated';
 
 /**
  * Internal dependencies
@@ -109,6 +110,20 @@ export function useBlockWrapperProps( props = {}, { __unstableIsHtml } = {} ) {
 			};
 		}
 	}, [ isSelected, isFirstMultiSelected, isLastMultiSelected ] );
+
+	// Set new block node if it changes.
+	// This effect should happen on every render, so no dependencies should be
+	// added.
+	useEffect( () => {
+		const node = ref.current;
+		setBlockNodes( ( nodes ) => {
+			if ( ! nodes[ clientId ] || nodes[ clientId ] === node ) {
+				return nodes;
+			}
+
+			return { ...nodes, [ clientId ]: node };
+		} );
+	} );
 
 	// translators: %s: Type of block (i.e. Text, Image etc)
 	const blockLabel = sprintf( __( 'Block: %s' ), blockTitle );
@@ -203,13 +218,10 @@ export function useBlockWrapperProps( props = {}, { __unstableIsHtml } = {} ) {
 			}
 		}
 
-		function onMouseLeave( { which, buttons } ) {
-			// The primary button must be pressed to initiate selection. Fall back
-			// to `which` if the standard `buttons` property is falsy. There are
-			// cases where Firefox might always set `buttons` to `0`.
+		function onMouseLeave( { buttons } ) {
+			// The primary button must be pressed to initiate selection.
 			// See https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
-			// See https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/which
-			if ( ( buttons || which ) === 1 ) {
+			if ( buttons === 1 ) {
 				onSelectionStart( clientId );
 			}
 		}
@@ -289,14 +301,11 @@ export function useBlockWrapperProps( props = {}, { __unstableIsHtml } = {} ) {
 }
 
 const BlockComponent = forwardRef(
-	(
-		{ children, tagName: TagName = 'div', __unstableIsHtml, ...props },
-		ref
-	) => {
-		const blockWrapperProps = useBlockWrapperProps(
-			{ ...props, ref },
-			{ __unstableIsHtml }
-		);
+	( { children, tagName: TagName = 'div', ...props }, ref ) => {
+		deprecated( 'wp.blockEditor.__experimentalBlock', {
+			alternative: 'wp.blockEditor.__experimentalUseBlockWrapperProps',
+		} );
+		const blockWrapperProps = useBlockWrapperProps( { ...props, ref } );
 		return <TagName { ...blockWrapperProps }>{ children }</TagName>;
 	}
 );
