@@ -28,8 +28,12 @@ export default function NavigationItem( props ) {
 		navigateToMenu,
 		onClick = noop,
 		title,
+		hideIfTargetMenuEmpty,
 		...restProps
 	} = props;
+	useNavigationTreeItem( props );
+	const { activeItem, setActiveMenu, isEmpty } = useNavigationContext();
+	const { isActive } = useNavigationMenuContext();
 
 	const [ itemId ] = useState( uniqueId( 'item-' ) );
 
@@ -41,6 +45,14 @@ export default function NavigationItem( props ) {
 	} = useNavigationContext();
 
 	if ( ! navigationTree.getItem( itemId )?._isVisible ) {
+		return null;
+	}
+
+	if (
+		hideIfTargetMenuEmpty &&
+		navigateToMenu &&
+		isEmpty( navigateToMenu )
+	) {
 		return null;
 	}
 
