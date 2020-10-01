@@ -46,9 +46,7 @@ describe( 'invalid blocks', () => {
 		);
 
 		// Click on the 'Resolve' button
-		const [ resolveButton ] = await frame.$x(
-			'//button[text()="Resolve"]'
-		);
+		const [ resolveButton ] = await page.$x( '//button[text()="Resolve"]' );
 		await resolveButton.click();
 
 		// Check we get the resolve modal with the appropriate contents
