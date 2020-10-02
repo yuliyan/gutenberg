@@ -3,7 +3,7 @@
  */
 import {
 	FontSizePicker,
-	__experimentalLineHeightControl as LineHeightControl,
+	LineHeightControl,
 	__experimentalFontFamilyControl as FontFamilyControl,
 } from '@wordpress/block-editor';
 import { PanelBody } from '@wordpress/components';
