@@ -75,19 +75,25 @@ function DownloadableBlocksPanel( {
 
 export default compose( [
 	withSpokenMessages,
-	withSelect( ( select, { filterValue } ) => {
+	withSelect( ( select, { filterValue, rootClientId = null } ) => {
 		const {
 			getDownloadableBlocks,
 			isRequestingDownloadableBlocks,
 		} = select( 'core/block-directory' );
+		const { canInsertBlockType } = select( 'core/block-editor' );
 
 		const hasPermission = select( 'core' ).canUser(
 			'read',
 			'block-directory/search'
 		);
-		const downloadableItems = hasPermission
-			? getDownloadableBlocks( filterValue )
-			: [];
+
+		const searchResultBlocks = getDownloadableBlocks( filterValue ).filter(
+			( block ) => {
+				return canInsertBlockType( block, rootClientId, true );
+			}
+		);
+
+		const downloadableItems = hasPermission ? searchResultBlocks : [];
 		const isLoading = isRequestingDownloadableBlocks( filterValue );
 
 		return {

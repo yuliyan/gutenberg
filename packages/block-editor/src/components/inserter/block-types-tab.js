@@ -216,6 +216,7 @@ export function BlockTypesTab( {
 					onHover,
 					filterValue,
 					hasItems,
+					rootClientId,
 				} }
 			>
 				{ ( fills ) => {
