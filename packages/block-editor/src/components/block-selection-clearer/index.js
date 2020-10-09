@@ -3,7 +3,7 @@
  */
 import { useSelect, useDispatch } from '@wordpress/data';
 
-function useBlockSelectionClearer() {
+export function useBlockSelectionClearer() {
 	const hasSelection = useSelect( ( select ) => {
 		const { hasSelectedBlock, hasMultiSelection } = select(
 			'core/block-editor'

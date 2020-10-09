@@ -11,13 +11,7 @@ import {
 	Button,
 } from '@wordpress/components';
 import { EntityProvider } from '@wordpress/core-data';
-import {
-	BlockContextProvider,
-	BlockSelectionClearer,
-	BlockBreadcrumb,
-	__unstableEditorStyles as EditorStyles,
-	__experimentalUseResizeCanvas as useResizeCanvas,
-} from '@wordpress/block-editor';
+import { BlockContextProvider, BlockBreadcrumb } from '@wordpress/block-editor';
 import {
 	FullscreenMode,
 	InterfaceSkeleton,
@@ -47,7 +41,6 @@ function Editor() {
 
 	const {
 		isFullscreenActive,
-		deviceType,
 		sidebarIsOpened,
 		settings,
 		entityId,
@@ -58,7 +51,6 @@ function Editor() {
 	} = useSelect( ( _select ) => {
 		const {
 			isFeatureActive,
-			__experimentalGetPreviewDeviceType,
 			getSettings,
 			getTemplateId,
 			getTemplatePartId,
@@ -78,7 +70,6 @@ function Editor() {
 
 		return {
 			isFullscreenActive: isFeatureActive( 'fullscreenMode' ),
-			deviceType: __experimentalGetPreviewDeviceType(),
 			sidebarIsOpened: !! _select(
 				'core/interface'
 			).getActiveComplementaryArea( 'core/edit-site' ),
@@ -98,8 +89,6 @@ function Editor() {
 	}, [] );
 	const { editEntityRecord } = useDispatch( 'core' );
 	const { setPage } = useDispatch( 'core/edit-site' );
-
-	const inlineStyles = useResizeCanvas( deviceType );
 
 	const [
 		isEntitiesSavedStatesOpen,
@@ -168,7 +157,6 @@ function Editor() {
 
 	return (
 		<>
-			<EditorStyles styles={ settings.styles } />
 			<FullscreenMode isActive={ isFullscreenActive } />
 			<UnsavedChangesWarning />
 			<SlotFillProvider>
@@ -253,12 +241,7 @@ function Editor() {
 														/>
 													}
 													content={
-														<BlockSelectionClearer
-															className="edit-site-visual-editor"
-															style={
-																inlineStyles
-															}
-														>
+														<>
 															<Notices />
 															<Popover.Slot name="block-toolbar" />
 															{ template && (
@@ -275,7 +258,7 @@ function Editor() {
 																/>
 															) }
 															<KeyboardShortcuts />
-														</BlockSelectionClearer>
+														</>
 													}
 													actions={
 														<>

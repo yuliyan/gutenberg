@@ -239,8 +239,12 @@ describe( 'Multi-entity save flow', () => {
 			await navigationPanel.navigate( 'Templates' );
 			await navigationPanel.clickItemByText( 'Front page' );
 
+			const frame = await page
+				.frames()
+				.find( ( f ) => f.name() === 'editor-canvas' );
+
 			// Insert a new template part placeholder.
-			await insertBlock( 'Template Part' );
+			await insertBlock( 'Template Part', frame );
 
 			const enabledButton = await page.waitForSelector(
 				activeSaveSiteSelector
