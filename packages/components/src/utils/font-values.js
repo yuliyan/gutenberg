@@ -8,6 +8,10 @@ const HELP_TEXT = {
 	fontSize: '12px',
 };
 
+/**
+ * @template {string} T
+ * @type {Record<T, import('react').CSSProperties>}
+ */
 export default {
 	default: DEFAULT,
 	helpText: HELP_TEXT,
