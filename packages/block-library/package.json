@@ -58,6 +58,7 @@
 		"lodash": "^4.17.19",
 		"memize": "^1.1.0",
 		"moment": "^2.22.1",
+		"react-autosize-textarea": "^3.0.2",
 		"react-easy-crop": "^3.0.0",
 		"reakit": "1.1.0",
 		"tinycolor2": "^1.4.1"
