@@ -4,11 +4,20 @@
 		"rootDir": "src",
 		"declarationDir": "build-types"
 	},
-	"references": [],
 	"include": [
 		"src/base-control/**/*",
 		"src/custom-select-control/**/*",
 		"src/dashicon/**/*",
 		"src/visually-hidden/**/*"
+	],
+	"references": [
+		{ "path": "../icons" },
+		{ "path": "../a11y" },
+		{ "path": "../element" },
+		{ "path": "../i18n" },
+		{ "path": "../icons" },
+		{ "path": "../is-shallow-equal" },
+		{ "path": "../primitives" },
+		{ "path": "../warning" }
 	]
 }
