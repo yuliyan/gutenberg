@@ -5,7 +5,8 @@
  * @property {number} [size=20]   Icon size
  * @property {string} [className] Class name
  */
-/** @typedef {import('react').ComponentPropsWithoutRef<'span'> & OwnProps} Props */
+
+/** @typedef {OwnProps & import('react').ComponentPropsWithoutRef<'span'>} Props */
 
 /**
  * @param {Props} props
