@@ -17,7 +17,7 @@ import { Button, VisuallyHidden } from '../';
  * @typedef CustomSelectControlOption
  * @property {string} key Unique key for the option.
  * @property {string} name The name of the option.
- * @property {import('react').CSSProperties?} style Optional styles for the option.
+ * @property {import('react').CSSProperties} [style] Optional styles for the option.
  * @property {string?} className Optional className to render on the option.
  */
 
