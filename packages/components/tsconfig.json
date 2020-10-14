@@ -2,12 +2,13 @@
 	"extends": "../../tsconfig.base.json",
 	"compilerOptions": {
 		"rootDir": "src",
-		"declarationDir": "build-types",
+		"declarationDir": "build-types"
 	},
 	"references": [],
-    "include": [
+	"include": [
 		"src/base-control/**/*",
+		"src/custom-select-control/**/*",
 		"src/dashicon/**/*",
 		"src/visually-hidden/**/*"
-	],
+	]
 }
