@@ -6,8 +6,8 @@
 	},
 	"references": [],
     "include": [
-		"src/dashicon/*",
-		"src/base-control/*",
-		"src/visually-hidden/*"
+		"src/base-control/**/*",
+		"src/dashicon/**/*",
+		"src/visually-hidden/**/*"
 	],
 }
