@@ -147,7 +147,7 @@ export class BlockSwitcher extends Component {
 
 		const singleBlockLabel = isSmallScreen
 			? blockTitle
-			: `${ __( 'Change block type or style' ) }  ( ${ blockTitle } )`;
+			: `${ __( 'Change block type or style' ) } ( ${ blockTitle } )`;
 
 		const blockSwitcherLabel =
 			1 === blocks.length
