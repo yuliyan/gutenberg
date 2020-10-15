@@ -26,6 +26,7 @@ import { Component } from '@wordpress/element';
 import { withSelect, withDispatch } from '@wordpress/data';
 import { compose } from '@wordpress/compose';
 import { stack } from '@wordpress/icons';
+import { withViewportMatch } from '@wordpress/viewport';
 
 /**
  * Internal dependencies
@@ -94,6 +95,7 @@ export class BlockSwitcher extends Component {
 			onTransform,
 			inserterItems,
 			hasBlockStyles,
+			isSmallScreen,
 		} = this.props;
 		const { hoveredClassName } = this.state;
 
@@ -128,22 +130,28 @@ export class BlockSwitcher extends Component {
 
 		const hasPossibleBlockTransformations = !! possibleBlockTransformations.length;
 
+		const blockTitle = getBlockType( hoveredBlock.name ).title;
+
 		if ( ! hasBlockStyles && ! hasPossibleBlockTransformations ) {
 			return (
 				<ToolbarGroup>
 					<ToolbarButton
 						disabled
 						className="block-editor-block-switcher__no-switcher-icon"
-						title={ __( 'Block icon' ) }
+						title={ blockTitle }
 						icon={ <BlockIcon icon={ icon } showColors /> }
 					/>
 				</ToolbarGroup>
 			);
 		}
 
+		const singleBlockLabel = isSmallScreen
+			? blockTitle
+			: `${ __( 'Change block type or style' ) }  ( ${ blockTitle } )`;
+
 		const blockSwitcherLabel =
 			1 === blocks.length
-				? __( 'Change block type or style' )
+				? singleBlockLabel
 				: sprintf(
 						/* translators: %s: number of blocks. */
 						_n(
@@ -258,5 +266,6 @@ export default compose(
 				switchToBlockType( blocks, name )
 			);
 		},
-	} ) )
+	} ) ),
+	withViewportMatch( { isSmallScreen: '< small' } )
 )( BlockSwitcher );
