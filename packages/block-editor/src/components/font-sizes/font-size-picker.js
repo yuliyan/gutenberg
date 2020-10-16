@@ -17,8 +17,10 @@ function FontSizePicker( props ) {
 	return (
 		<BaseFontSizePicker
 			{ ...props }
-			fontSizes={ fontSizes }
-			disableCustomFontSizes={ disableCustomFontSizes }
+			fontSizes={ props.fontSizes ?? fontSizes }
+			disableCustomFontSizes={
+				props.disableCustomFontSizes ?? disableCustomFontSizes
+			}
 		/>
 	);
 }

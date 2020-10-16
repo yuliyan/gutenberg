@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { LINK_COLOR } from '../editor/utils';
+import { LINK_COLOR, GLOBAL_CONTEXT } from '../editor/utils';
 import ColorPalettePanel from './color-palette-panel';
 
 export default ( {
@@ -15,6 +15,7 @@ export default ( {
 	getStyleProperty,
 	setStyleProperty,
 	getSetting,
+	getMergedSetting,
 	setSetting,
 } ) => {
 	if (
@@ -74,11 +75,30 @@ export default ( {
 			label: __( 'Link color' ),
 		} );
 	}
-
 	return (
 		<PanelColorGradientSettings
 			title={ __( 'Color' ) }
 			settings={ settings }
+			colors={
+				getMergedSetting( name, 'color.palette' ) ??
+				getMergedSetting( GLOBAL_CONTEXT, 'color.palette' )
+			}
+			gradients={
+				getMergedSetting( name, 'color.gradients' ) ??
+				getMergedSetting( GLOBAL_CONTEXT, 'color.gradients' )
+			}
+			disableCustomColors={
+				! (
+					getMergedSetting( name, 'color.custom' ) ??
+					getMergedSetting( GLOBAL_CONTEXT, 'color.custom' )
+				)
+			}
+			disableCustomGradients={
+				! (
+					getMergedSetting( name, 'color.customGradient' ) ??
+					getMergedSetting( GLOBAL_CONTEXT, 'color.customGradient' )
+				)
+			}
 		>
 			<ColorPalettePanel
 				key={ 'color-palette-panel-' + name }

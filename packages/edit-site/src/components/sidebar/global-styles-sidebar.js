@@ -28,6 +28,7 @@ export default ( { identifier, title, icon, closeLabel } ) => {
 		getStyleProperty,
 		setStyleProperty,
 		getSetting,
+		getMergedSetting,
 		setSetting,
 	} = useGlobalStylesContext();
 	const [ canRestart, onReset ] = useGlobalStylesReset();
@@ -121,6 +122,9 @@ export default ( { identifier, title, icon, closeLabel } ) => {
 													supports,
 													name,
 												} }
+												getMergedSetting={
+													getMergedSetting
+												}
 												getStyleProperty={
 													getStyleProperty
 												}
@@ -139,6 +143,9 @@ export default ( { identifier, title, icon, closeLabel } ) => {
 												}
 												setStyleProperty={
 													setStyleProperty
+												}
+												getMergedSetting={
+													getMergedSetting
 												}
 												getSetting={ getSetting }
 												setSetting={ setSetting }
@@ -159,6 +166,7 @@ export default ( { identifier, title, icon, closeLabel } ) => {
 								supports,
 								name: blockName,
 							} }
+							getMergedSetting={ getMergedSetting }
 							getStyleProperty={ getStyleProperty }
 							setStyleProperty={ setStyleProperty }
 						/>,
@@ -170,6 +178,7 @@ export default ( { identifier, title, icon, closeLabel } ) => {
 							} }
 							getStyleProperty={ getStyleProperty }
 							setStyleProperty={ setStyleProperty }
+							getMergedSetting={ getMergedSetting }
 							getSetting={ getSetting }
 							setSetting={ setSetting }
 						/>,

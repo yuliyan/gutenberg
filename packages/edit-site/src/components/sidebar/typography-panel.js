@@ -8,10 +8,11 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { fromPx, toPx } from '../editor/utils';
+import { fromPx, toPx, GLOBAL_CONTEXT } from '../editor/utils';
 
 export default ( {
 	context: { supports, name },
+	getMergedSetting,
 	getStyleProperty,
 	setStyleProperty,
 } ) => {
@@ -29,6 +30,25 @@ export default ( {
 					value={ fromPx( getStyleProperty( name, 'fontSize' ) ) }
 					onChange={ ( value ) =>
 						setStyleProperty( name, 'fontSize', toPx( value ) )
+					}
+					fontSizes={
+						getMergedSetting( name, 'typography.fontSizes' ) ??
+						getMergedSetting(
+							GLOBAL_CONTEXT,
+							'typography.fontSizes'
+						)
+					}
+					disableCustomFontSizes={
+						! (
+							getMergedSetting(
+								name,
+								'typography.customFontSize'
+							) ??
+							getMergedSetting(
+								GLOBAL_CONTEXT,
+								'typography.customFontSize'
+							)
+						)
 					}
 				/>
 			) }

@@ -30,6 +30,7 @@ const EMPTY_CONTENT = '{}';
 const GlobalStylesContext = createContext( {
 	/* eslint-disable no-unused-vars */
 	getSetting: ( context, path ) => {},
+	getMergedSetting: ( context, path ) => {},
 	setSetting: ( context, path, newValue ) => {},
 	getStyleProperty: ( context, propertyName ) => {},
 	setStyleProperty: ( context, propertyName, newValue ) => {},
@@ -70,6 +71,8 @@ export default function GlobalStylesProvider( {
 	const nextValue = useMemo(
 		() => ( {
 			contexts,
+			getMergedSetting: ( context, path ) =>
+				get( mergedStyles?.[ context ]?.settings, path ),
 			getSetting: ( context, path ) =>
 				get( userStyles?.[ context ]?.settings, path ),
 			setSetting: ( context, path, newValue ) => {
