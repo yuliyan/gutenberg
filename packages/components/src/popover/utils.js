@@ -249,17 +249,17 @@ export function computePopoverYAxisPosition(
  * Utility used to compute the popover position and the content max width/height
  * for a popover given its anchor rect and its content size.
  *
- * @param {Object}  anchorRect        Anchor Rect.
- * @param {Object}  contentSize       Content Size.
- * @param {string}  position          Position.
+ * @param {Object} anchorRect        Anchor Rect.
+ * @param {Object} contentSize       Content Size.
+ * @param {string} position          Position.
  * @param {boolean} sticky            Whether or not to stick the popover to the
- *                                    scroll container edge when part of the
- *                                    anchor leaves view.
+ * scroll container edge when part of the
+ * anchor leaves view.
  * @param {Element} anchorRef         The anchor element.
- * @param {number}  relativeOffsetTop If applicable, top offset of the relative
- *                                    positioned parent container.
+ * @param {number} relativeOffsetTop If applicable, top offset of the relative
+ * positioned parent container.
  * @param {Element} boundaryElement   Boundary element.
- *
+ * @param {boolean} __unstableSpanOverAnchor
  * @return {Object} Popover position and constraints.
  */
 export function computePopoverPosition(
@@ -269,8 +269,17 @@ export function computePopoverPosition(
 	sticky,
 	anchorRef,
 	relativeOffsetTop,
-	boundaryElement
+	boundaryElement,
+	__unstableSpanOverAnchor
 ) {
+	if ( __unstableSpanOverAnchor ) {
+		return {
+			popoverWidth: anchorRect.width,
+			popoverTop: anchorRect.top,
+			popoverLeft: anchorRect.left,
+		};
+	}
+
 	const [ yAxis, xAxis = 'center', corner ] = position.split( ' ' );
 
 	const yAxisPosition = computePopoverYAxisPosition(
