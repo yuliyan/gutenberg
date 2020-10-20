@@ -1,3 +1,8 @@
+/**
+ * External dependencies
+ */
+import { find } from 'lodash';
+
 /* Supporting data */
 export const GLOBAL_CONTEXT = 'global';
 export const PRESET_CATEGORIES = {
@@ -20,3 +25,36 @@ export const fromPx = ( value ) => {
 };
 
 export const toPx = ( value ) => ( value ? value + 'px' : value );
+
+export function getPresetVariable( presetCategory, presets, value ) {
+	if ( ! value ) {
+		return;
+	}
+	const presetData = PRESET_CATEGORIES[ presetCategory ];
+	const { key } = presetData;
+	const presetObject = find( presets, ( preset ) => {
+		return preset[ key ] === value;
+	} );
+	return (
+		presetObject && `var:preset|${ presetCategory }|${ presetObject.slug }`
+	);
+}
+
+export function getPresetValueFromVariable(
+	presetCategory,
+	presets,
+	variable
+) {
+	if ( ! variable ) {
+		return;
+	}
+	const slug = variable.slice( variable.lastIndexOf( '|' ) + 1 );
+	const presetObject = find( presets, ( preset ) => {
+		return preset.slug === slug;
+	} );
+	if ( presetObject ) {
+		const presetData = PRESET_CATEGORIES[ presetCategory ];
+		const { key } = presetData;
+		return presetObject[ key ];
+	}
+}

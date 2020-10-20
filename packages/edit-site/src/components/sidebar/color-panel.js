@@ -7,7 +7,12 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { LINK_COLOR, GLOBAL_CONTEXT } from '../editor/utils';
+import {
+	LINK_COLOR,
+	GLOBAL_CONTEXT,
+	getPresetValueFromVariable,
+	getPresetVariable,
+} from '../editor/utils';
 import ColorPalettePanel from './color-palette-panel';
 
 export default ( {
@@ -29,30 +34,66 @@ export default ( {
 
 	const settings = [];
 
+	const colorPresets =
+		getMergedSetting( name, 'color.palette' ) ??
+		getMergedSetting( GLOBAL_CONTEXT, 'color.palette' );
+	const gradientPresets =
+		getMergedSetting( name, 'color.gradients' ) ??
+		getMergedSetting( GLOBAL_CONTEXT, 'color.gradients' );
+
 	if ( supports.includes( 'color' ) ) {
+		const color = getStyleProperty( name, 'color' );
+
 		settings.push( {
-			colorValue: getStyleProperty( name, 'color' ),
+			colorValue:
+				getPresetValueFromVariable( 'color', colorPresets, color ) ||
+				color,
 			onColorChange: ( value ) =>
-				setStyleProperty( name, 'color', value ),
+				setStyleProperty(
+					name,
+					'color',
+					getPresetVariable( 'color', colorPresets, value ) || value
+				),
 			label: __( 'Text color' ),
 		} );
 	}
 
 	let backgroundSettings = {};
 	if ( supports.includes( 'backgroundColor' ) ) {
+		const backgroundColor = getStyleProperty( name, 'backgroundColor' );
 		backgroundSettings = {
-			colorValue: getStyleProperty( name, 'backgroundColor' ),
+			colorValue:
+				getPresetValueFromVariable(
+					'color',
+					colorPresets,
+					backgroundColor
+				) || backgroundColor,
 			onColorChange: ( value ) =>
-				setStyleProperty( name, 'backgroundColor', value ),
+				setStyleProperty(
+					name,
+					'backgroundColor',
+					getPresetVariable( 'color', colorPresets, value ) || value
+				),
 		};
 	}
 
 	let gradientSettings = {};
 	if ( supports.includes( 'background' ) ) {
+		const gradient = getStyleProperty( name, 'background' );
 		gradientSettings = {
-			gradientValue: getStyleProperty( name, 'background' ),
+			gradientValue:
+				getPresetValueFromVariable(
+					'gradient',
+					gradientPresets,
+					gradient
+				) || gradient,
 			onGradientChange: ( value ) =>
-				setStyleProperty( name, 'background', value ),
+				setStyleProperty(
+					name,
+					'background',
+					getPresetVariable( 'gradient', gradientPresets, value ) ||
+						value
+				),
 		};
 	}
 
@@ -79,14 +120,8 @@ export default ( {
 		<PanelColorGradientSettings
 			title={ __( 'Color' ) }
 			settings={ settings }
-			colors={
-				getMergedSetting( name, 'color.palette' ) ??
-				getMergedSetting( GLOBAL_CONTEXT, 'color.palette' )
-			}
-			gradients={
-				getMergedSetting( name, 'color.gradients' ) ??
-				getMergedSetting( GLOBAL_CONTEXT, 'color.gradients' )
-			}
+			colors={ colorPresets }
+			gradients={ gradientPresets }
 			disableCustomColors={
 				! (
 					getMergedSetting( name, 'color.custom' ) ??
