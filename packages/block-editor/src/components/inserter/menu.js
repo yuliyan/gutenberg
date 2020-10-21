@@ -1,7 +1,7 @@
 /**
  * WordPress dependencies
  */
-import { useState } from '@wordpress/element';
+import { useState, useCallback, useMemo } from '@wordpress/element';
 import { LEFT, RIGHT, UP, DOWN, BACKSPACE, ENTER } from '@wordpress/keycodes';
 import { VisuallyHidden } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
@@ -63,7 +63,7 @@ function InserterMenu( {
 
 	const showPatterns = ! destinationRootClientId && hasPatterns;
 
-	const onKeyDown = ( event ) => {
+	const onKeyDown = useCallback( ( event ) => {
 		if (
 			[ LEFT, DOWN, RIGHT, UP, BACKSPACE, ENTER ].includes(
 				event.keyCode
@@ -72,65 +72,107 @@ function InserterMenu( {
 			// Stop the key event from propagating up to ObserveTyping.startTypingInTextField.
 			event.stopPropagation();
 		}
-	};
+	}, [] );
 
-	const onInsert = ( blocks ) => {
-		onInsertBlocks( blocks );
-		onSelect();
-	};
+	const onInsert = useCallback(
+		( blocks ) => {
+			onInsertBlocks( blocks );
+			onSelect();
+		},
+		[ onInsertBlocks, onSelect ]
+	);
 
 	const onInsertPattern = ( blocks, patternName ) => {
 		onInsertBlocks( blocks, { patternName } );
 		onSelect();
 	};
 
-	const onHover = ( item ) => {
-		onToggleInsertionPoint( !! item );
-		setHoveredItem( item );
-	};
+	const onHover = useCallback(
+		( item ) => {
+			onToggleInsertionPoint( !! item );
+			setHoveredItem( item );
+		},
+		[ onToggleInsertionPoint, setHoveredItem ]
+	);
 
-	const onClickPatternCategory = ( patternCategory ) => {
-		setSelectedPatternCategory( patternCategory );
-	};
+	const onClickPatternCategory = useCallback(
+		( patternCategory ) => {
+			setSelectedPatternCategory( patternCategory );
+		},
+		[ setSelectedPatternCategory ]
+	);
 
-	const blocksTab = (
-		<>
-			<div className="block-editor-inserter__block-list">
-				<BlockTypesTab
-					rootClientId={ destinationRootClientId }
-					onInsert={ onInsert }
-					onHover={ onHover }
-					filterValue={ filterValue }
-					showMostUsedBlocks={ showMostUsedBlocks }
-				/>
-			</div>
-			{ showInserterHelpPanel && (
-				<div className="block-editor-inserter__tips">
-					<VisuallyHidden as="h2">
-						{ __( 'A tip for using the block editor' ) }
-					</VisuallyHidden>
-					<Tips />
+	const blocksTab = useMemo(
+		() => (
+			<>
+				<div className="block-editor-inserter__block-list">
+					<BlockTypesTab
+						rootClientId={ destinationRootClientId }
+						onInsert={ onInsert }
+						onHover={ onHover }
+						filterValue={ filterValue }
+						showMostUsedBlocks={ showMostUsedBlocks }
+					/>
 				</div>
-			) }
-		</>
+				{ showInserterHelpPanel && (
+					<div className="block-editor-inserter__tips">
+						<VisuallyHidden as="h2">
+							{ __( 'A tip for using the block editor' ) }
+						</VisuallyHidden>
+						<Tips />
+					</div>
+				) }
+			</>
+		),
+		[
+			destinationRootClientId,
+			onInsert,
+			onHover,
+			filterValue,
+			showMostUsedBlocks,
+			showInserterHelpPanel,
+		]
 	);
 
-	const patternsTab = (
-		<BlockPatternsTabs
-			onInsert={ onInsertPattern }
-			filterValue={ filterValue }
-			onClickCategory={ onClickPatternCategory }
-			selectedCategory={ selectedPatternCategory }
-		/>
+	const patternsTab = useMemo(
+		() => (
+			<BlockPatternsTabs
+				onInsert={ onInsertPattern }
+				filterValue={ filterValue }
+				onClickCategory={ onClickPatternCategory }
+				selectedCategory={ selectedPatternCategory }
+			/>
+		),
+		[
+			onInsertPattern,
+			filterValue,
+			onClickPatternCategory,
+			selectedPatternCategory,
+		]
 	);
 
-	const reusableBlocksTab = (
-		<ReusableBlocksTab
-			rootClientId={ destinationRootClientId }
-			onInsert={ onInsert }
-			onHover={ onHover }
-			filterValue={ filterValue }
-		/>
+	const reusableBlocksTab = useMemo(
+		() => (
+			<ReusableBlocksTab
+				rootClientId={ destinationRootClientId }
+				onInsert={ onInsert }
+				onHover={ onHover }
+				filterValue={ filterValue }
+			/>
+		),
+		[ destinationRootClientId, onInsert, onHover, filterValue ]
+	);
+
+	const getCurrentTab = useCallback(
+		( tab ) => {
+			if ( tab.name === 'blocks' ) {
+				return blocksTab;
+			} else if ( tab.name === 'patterns' ) {
+				return patternsTab;
+			}
+			return reusableBlocksTab;
+		},
+		[ blocksTab, patternsTab, reusableBlocksTab ]
 	);
 
 	const searchFormPlaceholder = () => {
@@ -174,14 +216,7 @@ function InserterMenu( {
 							showReusableBlocks={ hasReusableBlocks }
 							onSelect={ setActiveTab }
 						>
-							{ ( tab ) => {
-								if ( tab.name === 'blocks' ) {
-									return blocksTab;
-								} else if ( tab.name === 'patterns' ) {
-									return patternsTab;
-								}
-								return reusableBlocksTab;
-							} }
+							{ getCurrentTab }
 						</InserterTabs>
 					) }
 					{ ! showPatterns && ! hasReusableBlocks && blocksTab }
