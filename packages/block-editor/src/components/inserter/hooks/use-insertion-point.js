@@ -10,6 +10,7 @@ import { useDispatch, useSelect } from '@wordpress/data';
 import { isUnmodifiedDefaultBlock } from '@wordpress/blocks';
 import { _n } from '@wordpress/i18n';
 import { speak } from '@wordpress/a11y';
+import { useCallback } from '@wordpress/element';
 
 /**
  * @typedef WPInserterConfig
@@ -76,7 +77,7 @@ function useInsertionPoint( {
 		hideInsertionPoint,
 	} = useDispatch( 'core/block-editor' );
 
-	function getInsertionIndex() {
+	const getInsertionIndex = useCallback( () => {
 		if ( insertionIndex !== undefined ) {
 			return insertionIndex;
 		}
@@ -94,49 +95,84 @@ function useInsertionPoint( {
 
 		// Otherwise, we insert at the end of the current rootClientId
 		return getBlockOrder( destinationRootClientId ).length;
-	}
+	}, [
+		insertionIndex,
+		clientId,
+		getBlockIndex,
+		destinationRootClientId,
+		getBlockSelectionEnd,
+		isAppender,
+		getBlockOrder,
+	] );
 
-	const onInsertBlocks = ( blocks, meta ) => {
-		const selectedBlock = getSelectedBlock();
-		if (
-			! isAppender &&
-			selectedBlock &&
-			isUnmodifiedDefaultBlock( selectedBlock )
-		) {
-			replaceBlocks( selectedBlock.clientId, blocks, null, null, meta );
-		} else {
-			insertBlocks(
-				blocks,
-				getInsertionIndex(),
-				destinationRootClientId,
-				selectBlockOnInsert,
-				meta
-			);
-		}
+	const onInsertBlocks = useCallback(
+		( blocks, meta ) => {
+			const selectedBlock = getSelectedBlock();
+			if (
+				! isAppender &&
+				selectedBlock &&
+				isUnmodifiedDefaultBlock( selectedBlock )
+			) {
+				replaceBlocks(
+					selectedBlock.clientId,
+					blocks,
+					null,
+					null,
+					meta
+				);
+			} else {
+				insertBlocks(
+					blocks,
+					getInsertionIndex(),
+					destinationRootClientId,
+					selectBlockOnInsert,
+					meta
+				);
+			}
 
-		if ( ! selectBlockOnInsert ) {
-			// translators: %d: the name of the block that has been added
-			const message = _n(
-				'%d block added.',
-				'%d blocks added.',
-				blocks.length
-			);
-			speak( message );
-		}
+			if ( ! selectBlockOnInsert ) {
+				// translators: %d: the name of the block that has been added
+				const message = _n(
+					'%d block added.',
+					'%d blocks added.',
+					blocks.length
+				);
+				speak( message );
+			}
 
-		if ( onSelect ) {
-			onSelect();
-		}
-	};
+			if ( onSelect ) {
+				onSelect();
+			}
+		},
+		[
+			getSelectedBlock,
+			isAppender,
+			isUnmodifiedDefaultBlock,
+			replaceBlocks,
+			insertBlocks,
+			getInsertionIndex,
+			destinationRootClientId,
+			selectBlockOnInsert,
+			onSelect,
+		]
+	);
 
-	const onToggleInsertionPoint = ( show ) => {
-		if ( show ) {
-			const index = getInsertionIndex();
-			showInsertionPoint( destinationRootClientId, index );
-		} else {
-			hideInsertionPoint();
-		}
-	};
+	const onToggleInsertionPoint = useCallback(
+		( show ) => {
+			if ( show ) {
+				const index = getInsertionIndex();
+				showInsertionPoint( destinationRootClientId, index );
+			} else {
+				hideInsertionPoint();
+			}
+		},
+		[
+			getInsertionIndex,
+			showInsertionPoint,
+			hideInsertionPoint,
+			destinationRootClientId,
+		]
+	);
 
 	return [ destinationRootClientId, onInsertBlocks, onToggleInsertionPoint ];
 }
