@@ -6,6 +6,7 @@ import {
 	createBlocksFromInnerBlocksTemplate,
 } from '@wordpress/blocks';
 import { useSelect } from '@wordpress/data';
+import { useCallback } from '@wordpress/element';
 
 /**
  * Retrieves the block types inserter state.
@@ -29,15 +30,18 @@ const useBlockTypesState = ( rootClientId, onInsert ) => {
 		[ rootClientId ]
 	);
 
-	const onSelectItem = ( { name, initialAttributes, innerBlocks } ) => {
-		const insertedBlock = createBlock(
-			name,
-			initialAttributes,
-			createBlocksFromInnerBlocksTemplate( innerBlocks )
-		);
+	const onSelectItem = useCallback(
+		( { name, initialAttributes, innerBlocks } ) => {
+			const insertedBlock = createBlock(
+				name,
+				initialAttributes,
+				createBlocksFromInnerBlocksTemplate( innerBlocks )
+			);
 
-		onInsert( insertedBlock );
-	};
+			onInsert( insertedBlock );
+		},
+		[ onInsert ]
+	);
 
 	return [ items, categories, collections, onSelectItem ];
 };
