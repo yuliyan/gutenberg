@@ -1,13 +1,20 @@
 /**
+ * External dependencies
+ */
+const { ExternalsPlugin } = require( 'webpack' );
+
+/**
  * Internal dependencies
  */
 const DependencyExtractionWebpackPlugin = require( '../../..' );
 
 module.exports = {
-	externals: {
-		'@wordpress/blob': 'wp.blob',
-		'rxjs/operators': 'rxjs.operators',
-		rxjs: true,
-	},
-	plugins: [ new DependencyExtractionWebpackPlugin() ],
+	plugins: [
+		new ExternalsPlugin( 'var', {
+			'@wordpress/blob': 'wp.blob',
+			'rxjs/operators': 'rxjs.operators',
+			rxjs: true,
+		} ),
+		new DependencyExtractionWebpackPlugin(),
+	],
 };
