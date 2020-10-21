@@ -1,10 +1,7 @@
 /**
  * WordPress dependencies
  */
-import {
-	PostTitle,
-	VisualEditorGlobalKeyboardShortcuts,
-} from '@wordpress/editor';
+import { VisualEditorGlobalKeyboardShortcuts } from '@wordpress/editor';
 import {
 	WritingFlow,
 	Typewriter,
@@ -43,9 +40,6 @@ function VisualEditor() {
 				<CopyHandler>
 					<WritingFlow>
 						<ObserveTyping>
-							<div className="edit-post-visual-editor__post-title-wrapper">
-								<PostTitle />
-							</div>
 							<BlockList />
 						</ObserveTyping>
 					</WritingFlow>
