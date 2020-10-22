@@ -10,10 +10,10 @@ import { v4 as uuid } from 'uuid';
 import {
 	apiFetch,
 	syncSelect,
-	atomicOperation,
+	acquireStoreLock,
+	releaseStoreLock,
 } from '@wordpress/data-controls';
 import { addQueryArgs } from '@wordpress/url';
-import triggerFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
@@ -338,6 +338,10 @@ export function* saveEntityRecord(
 	}
 	const entityIdKey = entity.key || DEFAULT_ENTITY_KEY;
 	const recordId = record[ entityIdKey ];
+	const lock = yield acquireStoreLock(
+		[ kind, name, recordId || uuid() ],
+		true
+	);
 
 	// Evaluate optimized edits.
 	// (Function edits that should be evaluated on save to avoid expensive computations on every edit.)
@@ -499,32 +503,25 @@ export function* saveEntityRecord(
 				name,
 				recordId
 			);
-			updatedRecord = yield atomicOperation(
-				true,
-				[ kind, name, recordId || uuid() ],
-				async function ( dispatch ) {
-					dispatch( 'core' ).receiveEntityRecords(
-						kind,
-						name,
-						{ ...persistedEntity, ...data },
-						undefined,
-						true
-					);
+			yield receiveEntityRecords(
+				kind,
+				name,
+				{ ...persistedEntity, ...data },
+				undefined,
+				true
+			);
 
-					updatedRecord = await triggerFetch( {
-						path,
-						method: recordId ? 'PUT' : 'POST',
-						data,
-					} );
-
-					dispatch( 'core' ).receiveEntityRecords(
-						kind,
-						name,
-						updatedRecord,
-						undefined,
-						true
-					);
-				}
+			updatedRecord = yield apiFetch( {
+				path,
+				method: recordId ? 'PUT' : 'POST',
+				data,
+			} );
+			yield receiveEntityRecords(
+				kind,
+				name,
+				updatedRecord,
+				undefined,
+				true
 			);
 		}
 	} catch ( _error ) {
@@ -566,6 +563,8 @@ export function* saveEntityRecord(
 		error,
 		isAutosave,
 	};
+
+	yield releaseStoreLock( lock );
 
 	return updatedRecord;
 }

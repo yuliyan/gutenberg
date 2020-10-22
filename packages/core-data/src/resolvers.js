@@ -7,13 +7,13 @@ import { find, includes, get, hasIn, compact, uniq } from 'lodash';
  * WordPress dependencies
  */
 import { addQueryArgs } from '@wordpress/url';
-import triggerFetch from '@wordpress/api-fetch';
 import deprecated from '@wordpress/deprecated';
 import {
 	apiFetch,
 	select,
 	syncSelect,
-	atomicOperation,
+	acquireStoreLock,
+	releaseStoreLock,
 } from '@wordpress/data-controls';
 
 /**
@@ -31,7 +31,6 @@ import {
 } from './actions';
 import { getKindEntities, DEFAULT_ENTITY_KEY } from './entities';
 import { ifNotResolved, getNormalizedCommaSeparable } from './utils';
-import { v4 as uuid } from 'uuid';
 
 /**
  * Requests authors from the REST API.
@@ -66,6 +65,7 @@ export function* getEntityRecord( kind, name, key = '', query ) {
 	if ( ! entity ) {
 		return;
 	}
+	const lock = yield acquireStoreLock( [ kind, name, key ], false );
 
 	if ( query !== undefined && query._fields ) {
 		// If requesting specific fields, items and query assocation to said
@@ -109,17 +109,10 @@ export function* getEntityRecord( kind, name, key = '', query ) {
 			return;
 		}
 	}
-	yield atomicOperation( false, [ kind, name, key ], async function (
-		dispatch
-	) {
-		const record = await triggerFetch( { path } );
-		await dispatch( 'core' ).receiveEntityRecords(
-			kind,
-			name,
-			record,
-			query
-		);
-	} );
+
+	const record = yield apiFetch( { path } );
+	yield receiveEntityRecords( kind, name, record, query );
+	yield releaseStoreLock( lock );
 }
 
 /**
@@ -151,6 +144,7 @@ export function* getEntityRecords( kind, name, query = {} ) {
 	if ( ! entity ) {
 		return;
 	}
+	const lock = yield acquireStoreLock( [ kind, name ], false );
 
 	if ( query._fields ) {
 		// If requesting specific fields, items and query assocation to said
@@ -170,30 +164,24 @@ export function* getEntityRecords( kind, name, query = {} ) {
 		context: 'edit',
 	} );
 
-	yield atomicOperation( false, [ kind, name ], async function ( dispatch ) {
-		let records = Object.values( await triggerFetch( { path } ) );
-		// If we request fields but the result doesn't contain the fields,
-		// explicitely set these fields as "undefined"
-		// that way we consider the query "fullfilled".
-		if ( query._fields ) {
-			records = records.map( ( record ) => {
-				query._fields.split( ',' ).forEach( ( field ) => {
-					if ( ! record.hasOwnProperty( field ) ) {
-						record[ field ] = undefined;
-					}
-				} );
-
-				return record;
+	let records = Object.values( yield apiFetch( { path } ) );
+	// If we request fields but the result doesn't contain the fields,
+	// explicitely set these fields as "undefined"
+	// that way we consider the query "fullfilled".
+	if ( query._fields ) {
+		records = records.map( ( record ) => {
+			query._fields.split( ',' ).forEach( ( field ) => {
+				if ( ! record.hasOwnProperty( field ) ) {
+					record[ field ] = undefined;
+				}
 			} );
-		}
 
-		await dispatch( 'core' ).receiveEntityRecords(
-			kind,
-			name,
-			records,
-			query
-		);
-	} );
+			return record;
+		} );
+	}
+
+	yield receiveEntityRecords( kind, name, records, query );
+	yield releaseStoreLock( lock );
 }
 
 getEntityRecords.shouldInvalidate = ( action, kind, name ) => {

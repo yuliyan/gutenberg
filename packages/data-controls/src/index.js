@@ -2,10 +2,7 @@
  * WordPress dependencies
  */
 import triggerFetch from '@wordpress/api-fetch';
-import {
-	controls as dataControls,
-	createRegistryControl,
-} from '@wordpress/data';
+import { controls as dataControls } from '@wordpress/data';
 // TODO: mark the deprecated controls after all Gutenberg usages are removed
 // import deprecated from '@wordpress/deprecated';
 
@@ -77,19 +74,26 @@ export function dispatch( ...args ) {
 	return dataControls.dispatch( ...args );
 }
 
-export function atomicOperation( exclusive, scope, handler ) {
+export const acquireStoreLock = function* ( scope, exclusive = true ) {
 	return {
-		type: 'ATOMIC_OPERATION',
-		exclusive,
+		type: 'ACQUIRE_STORE_LOCK',
 		scope,
-		handler,
+		exclusive,
 	};
-}
+};
+
+export const releaseStoreLock = function* ( lock ) {
+	return {
+		type: 'RELEASE_STORE_LOCK',
+		lock,
+	};
+};
 
 /**
  * The default export is what you use to register the controls with your custom
  * store.
  *
+ * @param paths
  * @example
  * ```js
  * // WordPress dependencies
@@ -103,108 +107,132 @@ export function atomicOperation( exclusive, scope, handler ) {
  * import * as resolvers from './resolvers';
  *
  * registerStore( 'my-custom-store', {
- * 	reducer,
- * 	controls,
- * 	actions,
- * 	selectors,
- * 	resolvers,
+ * reducer,
+ * controls,
+ * actions,
+ * selectors,
+ * resolvers,
  * } );
  * ```
- *
  * @return {Object} An object for registering the default controls with the
- *                  store.
+ * store.
  */
 export const controls = {
-	ATOMIC_OPERATION: createRegistryControl(
-		( registry ) => ( { exclusive, scope, handler } ) => {
-			const promise = new Promise( ( resolve ) => {
-				enqueued.unshift( {
-					exclusive,
-					scope,
-					handler,
-					resolve,
-				} );
+	ACQUIRE_STORE_LOCK: ( { scope, exclusive } ) => {
+		const promise = new Promise( ( resolve ) => {
+			lockRequests.unshift( {
+				exclusive,
+				scope,
+				notifyAcquired: resolve,
 			} );
-			runQueue( registry );
-			return promise;
-		}
-	),
+		} );
+		acquireAvailableLocks();
+		return promise;
+	},
+
+	RELEASE_STORE_LOCK: ( { lock } ) => {
+		releaseLock( lock );
+		// Run anything that got unblocked by releasing this lock in the next tick:
+		setTimeout( () => {
+			acquireAvailableLocks();
+		} );
+	},
 
 	API_FETCH( { request } ) {
 		return triggerFetch( request );
 	},
 };
 
-const enqueued = [];
-const inProgress = {
-	operations: [],
-	nestedScopes: {},
+const lockRequests = [];
+const lockTree = {
+	locks: [],
+	children: {},
 };
 
-function runQueue( registry ) {
-	const runnable = [];
-	outer: for ( let i = enqueued.length - 1; i >= 0; i-- ) {
-		const operation = enqueued[ i ];
-		const { exclusive, scope } = operation;
+function acquireAvailableLocks() {
+	for ( let i = lockRequests.length - 1; i >= 0; i-- ) {
+		const { scope, exclusive, notifyAcquired } = lockRequests[ i ];
+		const lock = acquireLock( scope, exclusive );
+		if ( lock ) {
+			// Remove the request from the queue
+			lockRequests.splice( i, 1 );
 
-		// Get to the targeted leaf
-		let leaf = inProgress;
-		const iterScope = [ ...scope ];
-		do {
-			if ( hasConflictingLock( exclusive, leaf.operations ) ) {
-				continue outer;
-			}
-			const branchName = iterScope.shift();
-			if ( ! leaf.nestedScopes[ branchName ] ) {
-				leaf.nestedScopes[ branchName ] = {
-					operations: [],
-					nestedScopes: {},
-				};
-			}
-			leaf = leaf.nestedScopes[ branchName ];
-		} while ( iterScope.length );
-
-		// Validate all nested scopes
-		const stack = [ leaf ];
-		while ( stack.length ) {
-			const childLeaf = stack.pop();
-			if ( hasConflictingLock( exclusive, childLeaf.operations ) ) {
-				continue outer;
-			}
-			stack.push( ...Object.values( childLeaf.nestedScopes ) );
+			// Notify caller
+			notifyAcquired( lock );
 		}
-
-		// Lock can be acquired! let's mark as runnable:
-		enqueued.splice( i, 1 );
-		runnable.push( { leaf, operation } );
-	}
-
-	// And run all runnables
-	for ( const { leaf, operation } of runnable ) {
-		const { handler } = operation;
-		// , so let's acquire...
-		leaf.operations.push( operation );
-		// ...and start the operation in the next tick
-		Promise.resolve()
-			.then( () => handler( registry.dispatch ) )
-			.finally( () => {
-				// Once it's over, let's remove it from the stack...
-				leaf.operations.splice(
-					leaf.operations.indexOf( operation ),
-					1
-				);
-				// ...and run what we can
-				runQueue( registry );
-			} );
 	}
 }
 
-function hasConflictingLock( exclusive, operations ) {
-	if ( exclusive && operations.length ) {
+function acquireLock( path, exclusive ) {
+	if ( ! lockAvailable( path, exclusive ) ) {
+		return false;
+	}
+
+	const node = getNode( path );
+	const lock = { path, exclusive };
+	node.locks.push( lock );
+	return lock;
+}
+
+function releaseLock( lock ) {
+	const node = getNode( lock.path );
+	node.locks.splice( node.locks.indexOf( lock ), 1 );
+}
+
+function lockAvailable( path, exclusive ) {
+	let node;
+
+	// Validate all parents and the node itself
+	for ( node of iteratePath( path ) ) {
+		if ( hasConflictingLock( exclusive, node.locks ) ) {
+			return false;
+		}
+	}
+
+	// Validate all nested nodes
+	for ( const descendant of iterateDescendants( node ) ) {
+		if ( hasConflictingLock( exclusive, descendant.locks ) ) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+function getNode( path ) {
+	const nodes = Array.from( iteratePath( path ) );
+	return nodes.shift();
+}
+
+function* iteratePath( path ) {
+	const currentNode = lockTree;
+	yield currentNode;
+	for ( const branchName of path ) {
+		if ( ! currentNode.children[ branchName ] ) {
+			currentNode.children[ branchName ] = {
+				locks: [],
+				children: {},
+			};
+		}
+		yield currentNode.children[ branchName ];
+	}
+}
+
+function* iterateDescendants( node ) {
+	const stack = [ node ];
+	while ( stack.length ) {
+		const childNode = stack.pop();
+		yield childNode;
+		stack.push( ...Object.values( childNode.children ) );
+	}
+}
+
+function hasConflictingLock( exclusive, locks ) {
+	if ( exclusive && locks.length ) {
 		return true;
 	}
 
-	if ( ! exclusive && operations.filter( ( op ) => op.exclusive ).length ) {
+	if ( ! exclusive && locks.filter( ( lock ) => lock.exclusive ).length ) {
 		return true;
 	}
 
