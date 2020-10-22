@@ -7,8 +7,14 @@ import { find, includes, get, hasIn, compact, uniq } from 'lodash';
  * WordPress dependencies
  */
 import { addQueryArgs } from '@wordpress/url';
+import triggerFetch from '@wordpress/api-fetch';
 import deprecated from '@wordpress/deprecated';
-import { apiFetch, select, syncSelect } from '@wordpress/data-controls';
+import {
+	apiFetch,
+	select,
+	syncSelect,
+	atomicOperation,
+} from '@wordpress/data-controls';
 
 /**
  * Internal dependencies
@@ -25,6 +31,7 @@ import {
 } from './actions';
 import { getKindEntities, DEFAULT_ENTITY_KEY } from './entities';
 import { ifNotResolved, getNormalizedCommaSeparable } from './utils';
+import { v4 as uuid } from 'uuid';
 
 /**
  * Requests authors from the REST API.
@@ -102,9 +109,17 @@ export function* getEntityRecord( kind, name, key = '', query ) {
 			return;
 		}
 	}
-
-	const record = yield apiFetch( { path } );
-	yield receiveEntityRecords( kind, name, record, query );
+	yield atomicOperation( false, [ kind, name, key ], async function (
+		dispatch
+	) {
+		const record = await triggerFetch( { path } );
+		await dispatch( 'core' ).receiveEntityRecords(
+			kind,
+			name,
+			record,
+			query
+		);
+	} );
 }
 
 /**
@@ -155,23 +170,30 @@ export function* getEntityRecords( kind, name, query = {} ) {
 		context: 'edit',
 	} );
 
-	let records = Object.values( yield apiFetch( { path } ) );
-	// If we request fields but the result doesn't contain the fields,
-	// explicitely set these fields as "undefined"
-	// that way we consider the query "fullfilled".
-	if ( query._fields ) {
-		records = records.map( ( record ) => {
-			query._fields.split( ',' ).forEach( ( field ) => {
-				if ( ! record.hasOwnProperty( field ) ) {
-					record[ field ] = undefined;
-				}
+	yield atomicOperation( false, [ kind, name ], async function ( dispatch ) {
+		let records = Object.values( await triggerFetch( { path } ) );
+		// If we request fields but the result doesn't contain the fields,
+		// explicitely set these fields as "undefined"
+		// that way we consider the query "fullfilled".
+		if ( query._fields ) {
+			records = records.map( ( record ) => {
+				query._fields.split( ',' ).forEach( ( field ) => {
+					if ( ! record.hasOwnProperty( field ) ) {
+						record[ field ] = undefined;
+					}
+				} );
+
+				return record;
 			} );
+		}
 
-			return record;
-		} );
-	}
-
-	yield receiveEntityRecords( kind, name, records, query );
+		await dispatch( 'core' ).receiveEntityRecords(
+			kind,
+			name,
+			records,
+			query
+		);
+	} );
 }
 
 getEntityRecords.shouldInvalidate = ( action, kind, name ) => {

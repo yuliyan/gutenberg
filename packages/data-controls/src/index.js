@@ -2,7 +2,10 @@
  * WordPress dependencies
  */
 import triggerFetch from '@wordpress/api-fetch';
-import { controls as dataControls } from '@wordpress/data';
+import {
+	controls as dataControls,
+	createRegistryControl,
+} from '@wordpress/data';
 // TODO: mark the deprecated controls after all Gutenberg usages are removed
 // import deprecated from '@wordpress/deprecated';
 
@@ -74,6 +77,15 @@ export function dispatch( ...args ) {
 	return dataControls.dispatch( ...args );
 }
 
+export function atomicOperation( exclusive, scope, handler ) {
+	return {
+		type: 'ATOMIC_OPERATION',
+		exclusive,
+		scope,
+		handler,
+	};
+}
+
 /**
  * The default export is what you use to register the controls with your custom
  * store.
@@ -103,7 +115,98 @@ export function dispatch( ...args ) {
  *                  store.
  */
 export const controls = {
+	ATOMIC_OPERATION: createRegistryControl(
+		( registry ) => ( { exclusive, scope, handler } ) => {
+			const promise = new Promise( ( resolve ) => {
+				enqueued.unshift( {
+					exclusive,
+					scope,
+					handler,
+					resolve,
+				} );
+			} );
+			runQueue( registry );
+			return promise;
+		}
+	),
+
 	API_FETCH( { request } ) {
 		return triggerFetch( request );
 	},
 };
+
+const enqueued = [];
+const inProgress = {
+	operations: [],
+	nestedScopes: {},
+};
+
+function runQueue( registry ) {
+	const runnable = [];
+	outer: for ( let i = enqueued.length - 1; i >= 0; i-- ) {
+		const operation = enqueued[ i ];
+		const { exclusive, scope } = operation;
+
+		// Get to the targeted leaf
+		let leaf = inProgress;
+		const iterScope = [ ...scope ];
+		do {
+			if ( hasConflictingLock( exclusive, leaf.operations ) ) {
+				continue outer;
+			}
+			const branchName = iterScope.shift();
+			if ( ! leaf.nestedScopes[ branchName ] ) {
+				leaf.nestedScopes[ branchName ] = {
+					operations: [],
+					nestedScopes: {},
+				};
+			}
+			leaf = leaf.nestedScopes[ branchName ];
+		} while ( iterScope.length );
+
+		// Validate all nested scopes
+		const stack = [ leaf ];
+		while ( stack.length ) {
+			const childLeaf = stack.pop();
+			if ( hasConflictingLock( exclusive, childLeaf.operations ) ) {
+				continue outer;
+			}
+			stack.push( ...Object.values( childLeaf.nestedScopes ) );
+		}
+
+		// Lock can be acquired! let's mark as runnable:
+		enqueued.splice( i, 1 );
+		runnable.push( { leaf, operation } );
+	}
+
+	// And run all runnables
+	for ( const { leaf, operation } of runnable ) {
+		const { handler } = operation;
+		// , so let's acquire...
+		leaf.operations.push( operation );
+		// ...and start the operation in the next tick
+		Promise.resolve()
+			.then( () => handler( registry.dispatch ) )
+			.finally( () => {
+				// Once it's over, let's remove it from the stack...
+				leaf.operations.splice(
+					leaf.operations.indexOf( operation ),
+					1
+				);
+				// ...and run what we can
+				runQueue( registry );
+			} );
+	}
+}
+
+function hasConflictingLock( exclusive, operations ) {
+	if ( exclusive && operations.length ) {
+		return true;
+	}
+
+	if ( ! exclusive && operations.filter( ( op ) => op.exclusive ).length ) {
+		return true;
+	}
+
+	return false;
+}

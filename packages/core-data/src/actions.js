@@ -2,12 +2,18 @@
  * External dependencies
  */
 import { castArray, get, isEqual, find } from 'lodash';
+import { v4 as uuid } from 'uuid';
 
 /**
  * WordPress dependencies
  */
-import { apiFetch, syncSelect } from '@wordpress/data-controls';
+import {
+	apiFetch,
+	syncSelect,
+	atomicOperation,
+} from '@wordpress/data-controls';
 import { addQueryArgs } from '@wordpress/url';
+import triggerFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
@@ -493,25 +499,32 @@ export function* saveEntityRecord(
 				name,
 				recordId
 			);
-			yield receiveEntityRecords(
-				kind,
-				name,
-				{ ...persistedEntity, ...data },
-				undefined,
-				true
-			);
+			updatedRecord = yield atomicOperation(
+				true,
+				[ kind, name, recordId || uuid() ],
+				async function ( dispatch ) {
+					dispatch( 'core' ).receiveEntityRecords(
+						kind,
+						name,
+						{ ...persistedEntity, ...data },
+						undefined,
+						true
+					);
 
-			updatedRecord = yield apiFetch( {
-				path,
-				method: recordId ? 'PUT' : 'POST',
-				data,
-			} );
-			yield receiveEntityRecords(
-				kind,
-				name,
-				updatedRecord,
-				undefined,
-				true
+					updatedRecord = await triggerFetch( {
+						path,
+						method: recordId ? 'PUT' : 'POST',
+						data,
+					} );
+
+					dispatch( 'core' ).receiveEntityRecords(
+						kind,
+						name,
+						updatedRecord,
+						undefined,
+						true
+					);
+				}
 			);
 		}
 	} catch ( _error ) {
