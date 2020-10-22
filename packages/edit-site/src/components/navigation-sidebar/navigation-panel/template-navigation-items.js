@@ -5,6 +5,7 @@ import {
 	Button,
 	__experimentalNavigationItem as NavigationItem,
 } from '@wordpress/components';
+import { useSelect } from '@wordpress/data';
 import { useState } from '@wordpress/element';
 
 /**
@@ -19,6 +20,11 @@ export default function TemplateNavigationItems( {
 	templates,
 	onActivateItem,
 } ) {
+	const defaultTemplateTypes = useSelect( ( select ) => {
+		const { getSettings } = select( 'core/edit-site' );
+		return getSettings()?.defaultTemplateTypes;
+	}, [] );
+
 	const [ hoveredTemplate, setHoveredTemplate ] = useState();
 
 	const onMouseEnterTemplate = ( template ) => setHoveredTemplate( template );
@@ -36,7 +42,10 @@ export default function TemplateNavigationItems( {
 		<>
 			{ templates.map( ( template ) => {
 				const key = `${ entityType }-${ template.id }`;
-				const { title, description } = getTemplateInfo( template );
+				const { title, description } = getTemplateInfo(
+					template,
+					defaultTemplateTypes
+				);
 				return (
 					<NavigationItem
 						className="edit-site-navigation-panel__template-item"
