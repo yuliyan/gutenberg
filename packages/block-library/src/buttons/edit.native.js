@@ -122,7 +122,7 @@ export default function ButtonsEdit( {
 				parentWidth={ maxWidth }
 				marginHorizontal={ spacing }
 				marginVertical={ spacing }
-				templateInsertUpdatesSelection={ true }
+				templateInsertUpdatesSelection
 			/>
 		</AlignmentHookSettingsProvider>
 	);
