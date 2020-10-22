@@ -166,7 +166,7 @@ export function* deleteEntityRecord( kind, name, recordId, query ) {
 	}
 	const lock = yield acquireStoreLock( [ kind, name, recordId ], true );
 	try {
-		yield* doDeleteEntityRecord( entity, recordId, query );
+		return yield* doDeleteEntityRecord( entity, recordId, query );
 	} finally {
 		yield releaseStoreLock( lock );
 	}
@@ -354,7 +354,7 @@ export function* saveEntityRecord(
 		true
 	);
 	try {
-		yield* doSaveEntityRecord( entity, record, recordId, { isAutosave } );
+		return yield* doSaveEntityRecord( entity, record, recordId, { isAutosave } );
 	} finally {
 		yield releaseStoreLock( lock );
 	}
