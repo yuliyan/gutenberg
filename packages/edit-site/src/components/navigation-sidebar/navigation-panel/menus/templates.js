@@ -29,7 +29,7 @@ export default function TemplatesMenu( { onActivateItem } ) {
 	const templates = useSelect(
 		( select ) =>
 			select( 'core' ).getEntityRecords( 'postType', 'wp_template', {
-				status: [ 'publish', 'auto-draft' ],
+				status: [ 'publish', 'auto-draft', 'theme-provided' ],
 				per_page: -1,
 			} ),
 		[]
