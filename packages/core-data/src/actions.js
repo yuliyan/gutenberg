@@ -161,11 +161,21 @@ export function receiveEmbedPreview( url, preview ) {
 export function* deleteEntityRecord( kind, name, recordId, query ) {
 	const entities = yield getKindEntities( kind );
 	const entity = find( entities, { kind, name } );
-	let error;
-	let deletedRecord = false;
 	if ( ! entity ) {
 		return;
 	}
+	const lock = yield acquireStoreLock( [ kind, name, recordId ], true );
+	try {
+		yield* doDeleteEntityRecord( entity, recordId, query );
+	} finally {
+		yield releaseStoreLock( lock );
+	}
+}
+
+function* doDeleteEntityRecord( entity, recordId, query ) {
+	const { kind, name } = entity;
+	let error;
+	let deletedRecord = false;
 
 	yield {
 		type: 'DELETE_ENTITY_RECORD_START',
@@ -338,11 +348,20 @@ export function* saveEntityRecord(
 	}
 	const entityIdKey = entity.key || DEFAULT_ENTITY_KEY;
 	const recordId = record[ entityIdKey ];
+
 	const lock = yield acquireStoreLock(
 		[ kind, name, recordId || uuid() ],
 		true
 	);
+	try {
+		yield* doSaveEntityRecord( entity, record, recordId, { isAutosave } );
+	} finally {
+		yield releaseStoreLock( lock );
+	}
+}
 
+function* doSaveEntityRecord( entity, record, recordId, { isAutosave } ) {
+	const { kind, name } = entity;
 	// Evaluate optimized edits.
 	// (Function edits that should be evaluated on save to avoid expensive computations on every edit.)
 	for ( const [ key, value ] of Object.entries( record ) ) {
@@ -417,7 +436,10 @@ export function* saveEntityRecord(
 					}
 					return acc;
 				},
-				{ status: data.status === 'auto-draft' ? 'draft' : data.status }
+				{
+					status:
+						data.status === 'auto-draft' ? 'draft' : data.status,
+				}
 			);
 			updatedRecord = yield apiFetch( {
 				path: `${ path }/autosaves`,
@@ -563,8 +585,6 @@ export function* saveEntityRecord(
 		error,
 		isAutosave,
 	};
-
-	yield releaseStoreLock( lock );
 
 	return updatedRecord;
 }
