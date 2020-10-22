@@ -199,7 +199,8 @@
 		"typescript": "4.0.3",
 		"uuid": "7.0.2",
 		"wd": "1.12.1",
-		"webpack": "4.42.0",
+		"webpack": "5.1.3",
+		"webpack-cli": "4.1.0",
 		"worker-farm": "1.7.0"
 	},
 	"scripts": {
