@@ -183,7 +183,6 @@ export function* getEntityRecords( kind, name, query = {} ) {
 		}
 
 		yield receiveEntityRecords( kind, name, records, query );
-		yield releaseStoreLock( lock );
 	} finally {
 		yield releaseStoreLock( lock );
 	}
