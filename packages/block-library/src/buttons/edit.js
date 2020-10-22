@@ -26,6 +26,7 @@ function ButtonsEdit() {
 		allowedBlocks: ALLOWED_BLOCKS,
 		template: BUTTONS_TEMPLATE,
 		orientation: 'horizontal',
+		templateInsertUpdatesSelection: true,
 	} );
 	return (
 		<AlignmentHookSettingsProvider value={ alignmentHooksSetting }>
