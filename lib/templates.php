@@ -202,13 +202,6 @@ apply_filters( 'rest_wp_template_collection_params', 'filter_rest_wp_template_co
  * @return array Filtered $args.
  */
 function filter_rest_wp_template_query( $args, $request ) {
-	// Create auto-drafts for each theme template files.
-	$block_template_files = gutenberg_get_template_paths();
-	foreach ( $block_template_files as $path ) {
-		$template_type = basename( $path, '.html' );
-		gutenberg_find_template_post_and_parts( $template_type, array( $template_type ) );
-	}
-
 	if ( $request['resolved'] ) {
 		$template_ids   = array( 0 ); // Return nothing by default (the 0 is needed for `post__in`).
 		$template_types = $request['slug'] ? $request['slug'] : get_template_types();
@@ -231,3 +224,52 @@ function filter_rest_wp_template_query( $args, $request ) {
 	return $args;
 }
 add_filter( 'rest_wp_template_query', 'filter_rest_wp_template_query', 99, 2 );
+
+function gutenberg_create_template_auto_drafts() {
+	$create_auto_drafts = false;
+
+	$theme                     = wp_get_theme();
+	$stylesheet                = $theme->get_stylesheet();
+	$last_auto_drafts_versions = get_option( 'gutenberg_last_template_auto_drafts_theme_versions', array() );
+	if ( isset( $last_auto_drafts_versions[ $stylesheet ] ) ) {
+		$last_version = $last_auto_drafts_versions[ $stylesheet ];
+		if ( version_compare( $theme->Version, $last_version, '>' ) ) {
+			$create_auto_drafts = true;
+		}
+	} else {
+		$create_auto_drafts = true;
+	}
+
+	$parent_theme = $theme->parent();
+			
+
+	if ( $parent_theme ) {
+		$parent_stylesheet = $parent_theme->get_stylesheet();
+
+		if ( isset( $last_auto_drafts_versions[ $parent_stylesheet ] ) ) {
+			$last_version = $last_auto_drafts_versions[ $parent_stylesheet ];
+			if ( version_compare( $parent_theme->Version, $last_version, '>' ) ) {
+				$create_auto_drafts = true;
+			}
+		} else {
+			$create_auto_drafts = true;
+		}
+	}
+	
+	if ( ! $create_auto_drafts ) {
+		return;
+	}
+
+	$block_template_files = gutenberg_get_template_paths();
+	foreach ( $block_template_files as $path ) {
+		$template_type = basename( $path, '.html' );
+		gutenberg_find_template_post_and_parts( $template_type, array( $template_type ) );
+	}
+
+	$last_auto_drafts_versions[ $stylesheet ] = $theme->Version;
+	if ( $parent_theme ) {
+		$last_auto_drafts_versions[ $parent_stylesheet ] = $parent_theme->Version;
+	}
+	update_option( 'gutenberg_last_template_auto_drafts_theme_versions', $last_auto_drafts_versions );
+}
+add_action( 'wp_loaded', 'gutenberg_create_template_auto_drafts' );
