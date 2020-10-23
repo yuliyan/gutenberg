@@ -20,9 +20,9 @@ export default function TemplateNavigationItems( {
 	templates,
 	onActivateItem,
 } ) {
-	const defaultTemplateTypes = useSelect( ( select ) => {
+	const defaultTemplateTypesDefinitions = useSelect( ( select ) => {
 		const { getSettings } = select( 'core/edit-site' );
-		return getSettings()?.defaultTemplateTypes;
+		return getSettings()?.defaultTemplateTypesDefinitions;
 	}, [] );
 
 	const [ hoveredTemplate, setHoveredTemplate ] = useState();
@@ -44,7 +44,7 @@ export default function TemplateNavigationItems( {
 				const key = `${ entityType }-${ template.id }`;
 				const { title, description } = getTemplateInfo(
 					template,
-					defaultTemplateTypes
+					defaultTemplateTypesDefinitions
 				);
 				return (
 					<NavigationItem
