@@ -9,7 +9,7 @@
  */
 function createCurrentHook( hooks ) {
 	return function currentHook() {
-		return hooks.__current[ hooks.__current.length - 1 ].name ?? null;
+		return hooks.__current[ hooks.__current.length - 1 ]?.name ?? null;
 	};
 }
 
