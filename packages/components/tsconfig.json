@@ -4,6 +4,6 @@
 		"rootDir": "src",
 		"declarationDir": "build-types"
 	},
-	"references": [ { "path": "../primitives" } ],
+	"references": [ { "path": "../deprecated" }, { "path": "../primitives" } ],
 	"include": [ "src/dashicon/*", "src/tip/*" ]
 }
