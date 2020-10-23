@@ -9,12 +9,12 @@ import { doAction } from './';
  * Returns a function which, when invoked, will remove a specified hook or all
  * hooks by the given name.
  *
- * @param  {Object}   hooks      Stored hooks, keyed by hook name.
+ * @param  {import('.').Hooks}   hooks      Stored hooks, keyed by hook name.
  * @param  {boolean}     removeAll  Whether to remove all callbacks for a hookName, without regard to namespace. Used to create `removeAll*` functions.
  *
  * @return {Function}            Function that removes hooks.
  */
-function createRemoveHook( hooks, removeAll ) {
+function createRemoveHook( hooks, removeAll = false ) {
 	/**
 	 * Removes the specified callback (or all callbacks) from the hook with a
 	 * given hookName and namespace.
@@ -22,9 +22,9 @@ function createRemoveHook( hooks, removeAll ) {
 	 * @param {string}    hookName  The name of the hook to modify.
 	 * @param {string}    namespace The unique namespace identifying the callback in the form `vendor/plugin/function`.
 	 *
-	 * @return {number}             The number of callbacks removed.
+	 * @return {number|undefined}             The number of callbacks removed.
 	 */
-	return function removeHook( hookName, namespace ) {
+	function removeHook( hookName, namespace ) {
 		if ( ! validateHookName( hookName ) ) {
 			return;
 		}
@@ -58,7 +58,7 @@ function createRemoveHook( hooks, removeAll ) {
 					// comes after the current callback, there's no problem;
 					// otherwise we need to decrease the execution index of any
 					// other runs by 1 to account for the removed element.
-					( hooks.__current || [] ).forEach( ( hookInfo ) => {
+					hooks.__current.forEach( ( hookInfo ) => {
 						if (
 							hookInfo.name === hookName &&
 							hookInfo.currentIndex >= i
@@ -74,7 +74,8 @@ function createRemoveHook( hooks, removeAll ) {
 		}
 
 		return handlersRemoved;
-	};
+	}
+	return removeHook;
 }
 
 export default createRemoveHook;
