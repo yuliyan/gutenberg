@@ -85,7 +85,8 @@ function gutenberg_widgets_init( $hook ) {
 
 	$preload_paths = array(
 		array( '/wp/v2/media', 'OPTIONS' ),
-		'/__experimental/sidebars?context=edit',
+		'/wp/v2/sidebars?context=edit&per_page=-1',
+		'/wp/v2/widgets?context=edit&per_page=-1',
 	);
 	$preload_data  = array_reduce(
 		$preload_paths,
@@ -133,7 +134,7 @@ add_action( 'admin_enqueue_scripts', 'gutenberg_widgets_init' );
  * @return bool Filtered decision about loading block assets.
  */
 function gutenberg_widgets_editor_load_block_editor_scripts_and_styles( $is_block_editor_screen ) {
-	if ( 'appearance_page_gutenberg-widgets' === get_current_screen()->base ) {
+	if ( is_callable( 'get_current_screen' ) && 'appearance_page_gutenberg-widgets' === get_current_screen()->base ) {
 		return true;
 	}
 
